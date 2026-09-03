@@ -1,4 +1,4 @@
-{ types, ... } @ adios:
+{ types, ... }@adios:
 {
   inputs = {
     mkWrapper.from = { parent }: parent.mkWrapper;
@@ -65,24 +65,10 @@
     inputs.mkWrapper {
       inherit (options) package;
       postWrap = ''
-        cp $out/share/systemd/user/app-com.mitchellh.ghostty.service .
+        cp $out/share/systemd/user/app-com.mitchellh.ghostty.service app-com.mitchellh.ghostty.service
         chmod +w app-com.mitchellh.ghostty.service
-        cat >> app-com.mitchell.ghostty.service<<EOF
-        [Unit]
-        Description=Ghostty
-        After=graphical-session.target
-        After=dbus.socket
-        Requires=dbus.socket
-
-        [Service]
-        Type=notify-reload
-        ReloadSignal=SIGUSR2
-        BusName=com.mitchellh.ghostty
-        ExecStart=$out/bin/ghostty --gtk-single-instance=true --initial-window=false
-
-        [Install]
-        WantedBy=graphical-session.target
-        EOF
+        substituteInPlace app-com.mitchellh.ghostty.service \
+          --replace-fail "${options.package}/bin/ghostty" "$out/bin/ghostty"
         cp --remove-destination app-com.mitchellh.ghostty.service $out/share/systemd/user/
       '';
       symlinks = {
