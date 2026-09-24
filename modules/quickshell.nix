@@ -25,7 +25,6 @@
 
   result = promise (
     { options, inputs }:
-    assert options ? configDir;
     inputs.mkWrapper {
       inherit (options) package;
       symlinks = {

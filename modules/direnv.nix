@@ -1,4 +1,4 @@
-{ types, promise, ... }:
+{ types, promise, assertions, ... }:
 {
   inputs = {
     mkWrapper.from = { parent }: parent.mkWrapper;
@@ -59,6 +59,11 @@
     };
   };
 
+  assertions = [
+    (assertions.disjoint "settings" "configFile")
+    (assertions.disjoint "direnvrc" "direnvrcFile")
+  ];
+
   mutations = {
     "/fish".interactiveShellInit = promise (
       { options, inputs }:
@@ -118,8 +123,6 @@
       inherit (options) nix-direnv;
       generator = formats.toml {};
     in
-    assert !(options ? settings && options ? configFile);
-    assert !(options ? direnvrc && options ? direnvrcFile);
     inputs.mkWrapper {
       inherit (options) package;
       symlinks = {
