@@ -1,4 +1,4 @@
-{ types, promise, ... } @ adios:
+{ types, promise, assertions, ... } @ adios:
 {
   inputs = {
     mkWrapper.from = { parent }: parent.mkWrapper;
@@ -63,6 +63,11 @@
     };
   };
 
+  assertions = [
+    (assertions.disjoint "sourceFiles" "settings")
+    (assertions.disjoint "sourceFiles" "keybinds")
+  ];
+
   result = promise (
     { options, inputs }:
     let
@@ -88,7 +93,6 @@
           ++ optionals (options ? keybinds) (mapAttrsToList formatKeybindLine options.keybinds)
       );
     in
-    assert !(options ? sourceFiles && (options ? settings || options ? keybinds));
     inputs.mkWrapper {
       inherit (options) package;
       symlinks = {
