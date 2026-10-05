@@ -1,4 +1,4 @@
-{ types, promise, ... }:
+{ types, promise, assertions, ... }:
 {
   inputs = {
     mkWrapper.from = { parent }: parent.mkWrapper;
@@ -66,6 +66,11 @@
     };
   };
 
+  assertions = [
+    (assertions.disjoint "settings" "configFile")
+    (assertions.disjoint "cssContents" "cssFile")
+  ];
+
   result = promise (
     { options, inputs }:
     let
@@ -73,8 +78,6 @@
       inherit (inputs.nixpkgs.pkgs) formats makeFontsConf writeText;
       generator = formats.toml {};
     in
-    assert !(options ? settings && options ? configFile);
-    assert !(options ? cssContents && options ? cssFile);
     inputs.mkWrapper {
       inherit (options) package;
       symlinks = {

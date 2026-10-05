@@ -1,4 +1,4 @@
-{ types, promise, ... } @ adios:
+{ types, promise, assertions, ... } @ adios:
 {
   inputs = {
     mkWrapper.from = { parent }: parent.mkWrapper;
@@ -36,12 +36,15 @@
     };
   };
 
+  assertions = [
+    (assertions.disjoint "settings" "configFile")
+  ];
+
   result = promise (
     { options, inputs }:
     let
       generator = inputs.nixpkgs.pkgs.formats.toml {};
     in
-    assert !(options ? settings && options ? configFile);
     inputs.mkWrapper {
       inherit (options) package;
       symlinks = {
