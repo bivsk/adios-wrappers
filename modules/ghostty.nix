@@ -1,4 +1,4 @@
-{ types, promise, ... }:
+{ types, promise, assertions, ... }:
 {
   inputs = {
     mkWrapper.from = { parent }: parent.mkWrapper;
@@ -40,6 +40,10 @@
     };
   };
 
+  assertions = [
+    (assertions.disjoint "settings" "configFile")
+  ];
+
   result = promise (
     { options, inputs }:
     let
@@ -48,7 +52,6 @@
         listsAsDuplicateKeys = true;
       };
     in
-    assert (options ? settings != options ? configFile);
     inputs.mkWrapper {
       inherit (options) package;
       # Ensure ghostty.service uses the wrapped package.
