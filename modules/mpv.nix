@@ -73,8 +73,8 @@
   result = promise (
     { options, inputs }:
     let
-      inherit (inputs.nixpkgs.pkgs) writeText mpv;
-      inherit (inputs.nixpkgs.lib) generators concatStringsSep mapAttrsToList optionalString;
+      inherit (inputs.nixpkgs.pkgs) mpv writeText linkFarm;
+      inherit (inputs.nixpkgs.lib) generators concatStringsSep mapAttrsToList optional;
       inherit (builtins) typeOf stringLength;
 
       # Most of this copied from https://github.com/nix-community/home-manager/blob/master/modules/programs/mpv.nix
@@ -118,6 +118,17 @@
           writeText "input.conf" (renderKeybinds options.keybinds)
         else
           null;
+
+      configDir = linkFarm "mpv-config" (
+        (optional (configFile != null) {
+          name = "mpv.conf";
+          path = configFile;
+        })
+        ++ (optional (keybindsFile != null) {
+          name = "input.conf";
+          path = keybindsFile;
+        })
+      );
     in
     # We use the nixpkgs wrapper and not `mkWrapper` for a couple of reasons:
     # - The double wrapping would make `umpv` not work if wrapping their wrapper
@@ -127,12 +138,8 @@
       mpv-unwrapped = options.package;
       scripts = options.scripts or [];
       extraMakeWrapperArgs = [
-        "--add-flags"
-        (
-          "--no-config"
-          + optionalString (configFile != null) " --include=${configFile}"
-          + optionalString (keybindsFile != null) " --input-conf=${keybindsFile}"
-        )
+        "--add-flag"
+        "--config-dir=${configDir}"
       ];
     }
   );
