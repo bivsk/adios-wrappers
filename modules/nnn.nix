@@ -1,4 +1,4 @@
-{ types, promise, ... }:
+{ types, promise, assertions, ... }:
 {
   inputs = {
     mkWrapper.from = { parent }: parent.mkWrapper;
@@ -41,12 +41,15 @@
     };
   };
 
+  assertions = [
+    (assertions.disjoint "configContents" "configFile")
+  ];
+
   result = promise (
     { options, inputs }:
     let
       inherit (inputs.nixpkgs.pkgs) writeText;
     in
-    assert !(options ? configContents && options ? configFile);
     inputs.mkWrapper {
       inherit (options) package;
       flags = options.flags or [];
